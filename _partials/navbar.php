@@ -7,7 +7,7 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="#">Accueil</a>
-        <a class="nav-link" href="#">Name</a> <!-- <?php echo $_SESSION['username']; ?> -->
+        <a class="nav-link" href="./view/login.php">Connexion</a>
       </div>
     </div>
   </div>

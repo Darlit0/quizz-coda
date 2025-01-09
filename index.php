@@ -4,7 +4,7 @@
 ?>
 
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="dark">
+<html lang="fr" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,5 +18,7 @@
     <div class="container" style="margin-top: 20px;">
         <?php require 'view/quiz.php'; ?>
     </div>
+
+    <script src="includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
