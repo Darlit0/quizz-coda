@@ -4,7 +4,7 @@
 function connect(PDO $pdo, string $username, string $pass)
 {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $query="SELECT *  FROM users WHERE (username = :username OR email = :username)";
+    $query="SELECT * FROM username WHERE (username = :username)";
     $prep = $pdo->prepare($query);
     $prep->bindValue(':username', $username, PDO::PARAM_STR);
     $prep->bindValue(':password', $pass, PDO::PARAM_STR);

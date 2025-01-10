@@ -1,4 +1,9 @@
+<?php
+   require("..//_partials/errors.php")
+?>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
 <div class="container vh-100 d-flex justify-content-center align-items-center">
     <div class="row justify-content-center w-100">
         <div class="col-3">
@@ -20,3 +25,34 @@
         </div>
     </div>
 </div>
+<script src="..//assets/js/services/login.js" type="module"></script>
+<script type="module">
+    import {login} from "..//assets/js/services/login.js";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const validLoginBtn = document.querySelector('#valid-login-btn')
+        const loginForm = document.querySelector('#login-form')
+        const errorElement = document.querySelector('#errors')
+
+        validLoginBtn.addEventListener('click',async () => {
+            if (!loginForm.checkValidity()) {
+                loginForm.reportValidity()
+                return false
+            }
+
+           const loginResult = await login(loginForm.elements['username'].value, loginForm.elements.pass.value)
+
+            if (loginResult.hasOwnProperty('authentication')){
+                document.location.href = 'index.php'
+            } else if (loginResult.hasOwnProperty('errors')) {
+                const errors = []
+                for (let i = 0; i < loginResult.errors.length; i++) {
+                   errors.push(`<div class="alert alert-danger" role="alert">${loginResult.errors[i]}</div>`)
+                }
+
+                errorElement.innerHTML = errors.join('')
+            }
+        })
+    })
+
+</script>
