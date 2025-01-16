@@ -1,8 +1,8 @@
 <?php
-/**
- * @var PDO $pdo
- */
-require("model/login.php");
+require("../includes/database.php");
+require("../model/login.php");
+
+header("Content-Type: application/json"); // Ensure the response is JSON
 
 if (!empty($_SERVER['CONTENT_TYPE']) &&
     (
@@ -14,29 +14,30 @@ if (!empty($_SERVER['CONTENT_TYPE']) &&
     $username = $_POST['username'] ?? null;
     $pass = $_POST['password'] ?? null;
 
-    if(null === $username || null === $pass) {
-        $errors[] = "identifiant ou mot de passe vide";
+    if (null === $username || null === $pass) {
+        $errors[] = "Identifiant ou mot de passe vide";
     } else {
-        $connexion = connect($pdo, $username, $pass);
+        $connexion = connect($pdo, $username);
 
-        if (empty($connexion) || !password_verify($pass, $connexion['password'])) {
+        if (empty($connexion)) {
             $errors[] = "Erreur d'identification, veuillez essayer à nouveau";
-        } elseif(0 === $connexion['enabled']) {
-            $errors[] = "Ce compte est désactivé";
+        } elseif (!password_verify($pass, $connexion['password'])) {
+            $errors[] = "Mot de passe incorrect";
         } else {
+            session_start();
             $_SESSION["auth"] = true;
             $_SESSION["username"] = $connexion['username'];
-            header("Content-Type: application/json");
-            echo json_encode(['authentication' => true]);
+            $_SESSION["user_role"] = 'admin'; // Définir le rôle de l'utilisateur
+            $previousPage = $_SERVER['HTTP_REFERER'] ?? '../index.php'; // Utiliser HTTP_REFERER pour obtenir la page précédente
+            echo json_encode(['authentication' => true, 'redirect' => $previousPage]);
             exit();
         }
     }
 
     if (!empty($errors)) {
-        header("Content-Type: application/json");
         echo json_encode(['errors' => $errors]);
         exit();
     }
 }
 
-require("view/login.php");
+echo json_encode(['errors' => ['Invalid request']]);

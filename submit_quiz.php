@@ -1,13 +1,5 @@
 <?php
-    session_start();
     require 'includes/database.php';
-
-    if (isset($_POST['logout'])) {
-        session_unset();
-        session_destroy();
-        header('Location: index.php');
-        exit();
-    }
 ?>
 
 <!DOCTYPE html>
@@ -18,17 +10,12 @@
     <title>Quiz Coda</title>
     <link rel="icon" type="image/png" href="img/quiz.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
     <?php include '_partials/navbar.php'; ?>
 
-    <div class="container" style="margin-top: 20px;">
-        <?php require 'view/quiz.php'; ?>
-    </div>
+
 
     <script src="includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+    </body>

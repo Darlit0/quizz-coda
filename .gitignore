@@ -1,0 +1,5 @@
+img/
+view/.env
+composer.lock
+composer.json
+vendor/ 

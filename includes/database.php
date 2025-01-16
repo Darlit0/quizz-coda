@@ -1,7 +1,8 @@
 <?php
 try {
-    $pdo = new PDO('mysql:host=localhost;dbname=quiz_coda','root','');
+    $pdo = new PDO('mysql:host=localhost;dbname=quiz_coda', 'root', '');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Exception $e) {
-    $errors[] = "Erreur de connexion à la bdd {$e->getMessage()}";
+    die('Erreur : ' . $e->getMessage());
 }
 ?>
