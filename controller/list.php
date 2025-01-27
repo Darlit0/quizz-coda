@@ -1,22 +1,18 @@
 <?php
-/**
- * @var PDO $pdo
- */
-require "model/list.php";
-const LIST_PERSONS_ITEMS_PER_PAGE = 20;
+require '../includes/database.php';
+require '../model/list.php';
 
-if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-    $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest'
-){
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $quiz_id = $_POST['quiz_id'] ?? null;
+    $status = $_POST['status'] ?? null;
 
-    $page = cleanString($_GET['page']) ?? 1;
-    [$persons, $count] = getPersons($pdo, $page, LIST_PERSONS_ITEMS_PER_PAGE);
-
-    if (!is_array($persons)) {
-        $errors[] = $persons;
+    if ($quiz_id !== null && $status !== null) {
+        $status = (int)$status;
+        $quiz_id = (int)$quiz_id;
+        $result = updateQuizStatus($pdo, $quiz_id, $status);
+        echo json_encode(['success' => $result]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
     }
-    header('Content-Type: application/json');
-    echo json_encode(['results' => $persons, 'count' => $count]);
-    exit();
 }
-require "view/list.php";
+?>

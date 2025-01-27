@@ -1,11 +1,12 @@
 <?php
+// filepath: /c:/xampp/htdocs/quizz_coda/view/start_quiz.php
 session_start();
-require "./includes/database.php";
+require "../includes/database.php";
 
 if (isset($_POST['logout'])) {
     session_unset();
     session_destroy();
-    $previousPage = $_SERVER['HTTP_REFERER'] ?? 'index.php'; // Utiliser HTTP_REFERER pour obtenir la page précédente
+    $previousPage = $_SERVER['HTTP_REFERER'] ?? 'index.php';
     header("Location: $previousPage");
     exit();
 }
@@ -15,14 +16,12 @@ $questions = [];
 $quiz = null;
 
 if ($quiz_id) {
-    // Fetch quiz information
     $query = "SELECT * FROM quiz WHERE id = :quiz_id";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':quiz_id', $quiz_id, PDO::PARAM_INT);
     $stmt->execute();
     $quiz = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Fetch questions for the selected quiz
     $query = "SELECT * FROM questions WHERE quiz_id = :quiz_id";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':quiz_id', $quiz_id, PDO::PARAM_INT);
@@ -41,7 +40,7 @@ if ($quiz_id) {
 </head>
 <body>
 
-    <?php include '_partials/navbar.php'; ?>
+    <?php include '../_partials/navbar.php'; ?>
 
     <div class="container mt-5">
         <h1 class="mb-4"><?= htmlspecialchars($quiz['name_quiz']) ?></h1>
@@ -55,7 +54,7 @@ if ($quiz_id) {
                                     <?= htmlspecialchars($question['question']) ?>
                                 </button>
                             </h2>
-                            <div id="collapse<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>" data-bs-parent="#accordionExample">
+                            <div id="collapse<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>">
                                 <div class="accordion-body">
                                     <div>
                                         <input type="radio" name="question_<?= $question['id'] ?>" value="<?= htmlspecialchars($question['good_response']) ?>" required> <?= htmlspecialchars($question['good_response']) ?><br>
@@ -68,14 +67,33 @@ if ($quiz_id) {
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Soumettre</button>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Soumettre</button>
+                </div>
             </form>
         <?php else: ?>
-            <div class="alert alert-warning">Aucune question disponible pour ce quiz.</div>
+            <div class="alert alert-warning">Aucune question trouvée pour ce quiz.</div>
         <?php endif; ?>
     </div>
 
-    <script src="includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/services/quiz.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accordion = document.getElementById('accordionExample');
+            accordion.addEventListener('change', function(event) {
+                if (event.target.type === 'radio') {
+                    const currentItem = event.target.closest('.accordion-item');
+                    const nextItem = currentItem.nextElementSibling;
+                    if (nextItem) {
+                        const nextButton = nextItem.querySelector('.accordion-button');
+                        const nextCollapse = nextItem.querySelector('.accordion-collapse');
+                        nextCollapse.classList.add('show');
+                        nextButton.classList.remove('collapsed');
+                        nextButton.setAttribute('aria-expanded', 'true');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -30,10 +30,14 @@ $quizzes = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($quiz['name_quiz']) ?></h5>
-                                <p class="card-text">Crée par <?= $quiz['creator'] ?></p>
+                                <p class="card-text"><?= htmlspecialchars($quiz['description']) ?></p>
                             </div>
-                            <div class="card-footer d-grid gap-2 d-flex justify-content-center">
-                                <a href="view/start_quiz.php?quiz_id=<?= $quiz['id'] ?>" class="btn btn-primary">Commencer</a>
+                            <div class="card-footer d-grid gap-2">
+                                <a href="view/start_quiz.php?quiz_id=<?= $quiz['id'] ?>" class="btn btn-success">Commencer</a>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-body-secondary">Catégorie : <?= htmlspecialchars($quiz['categorie']) ?></small>
+                                    <small class="text-body-secondary">Auteur : <?= htmlspecialchars($quiz['creator']) ?></small>
+                                </div>
                             </div>
                         </div>
                     </div>

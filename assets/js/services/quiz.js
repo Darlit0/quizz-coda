@@ -10,4 +10,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    var deleteQuizId = null;
+
+    document.querySelectorAll('.delete-quiz').forEach(function(button) {
+        button.addEventListener('click', function() {
+            deleteQuizId = this.getAttribute('data-id');
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        });
+    });
+
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (deleteQuizId) {
+            fetch('list.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: deleteQuizId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la suppression du quiz.');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression du quiz.');
+            });
+        }
+    });
 });
