@@ -19,5 +19,18 @@ function getUsers(PDO $pdo): array|string
     return $res;
 }
 
+function getAllQuizzes(PDO $pdo): array {
+    $query = "SELECT * FROM quiz WHERE enabled = 1";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-?> 
+function getQuestionsByQuizId(PDO $pdo, int $quiz_id): array {
+    $query = "SELECT * FROM questions WHERE quiz_id = :quiz_id";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':quiz_id', $quiz_id, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+?>

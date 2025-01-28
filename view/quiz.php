@@ -18,8 +18,11 @@ $quizzes = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
     <title>Quiz Coda</title>
     <link rel="icon" type="image/png" href="img/quiz.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
+
+    <?php include './_partials/navbar.php'; ?>
 
     <div class="container mt-5">
         <h1 class="mb-4">Sélectionnez un quiz</h1>
@@ -51,5 +54,6 @@ $quizzes = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script src="includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/services/quiz.js"></script>
 </body>
 </html>

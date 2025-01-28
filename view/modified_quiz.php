@@ -10,12 +10,37 @@ if (isset($_POST['logout'])) {
     exit();
 }
 
-// Get quiz ID from URL
-$quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
+$quiz_id = $_GET['quiz_id'] ?? null;
 
-if ($quiz_id <= 0) {
-    echo "<p>ID de quiz invalide. ID reçu: " . htmlspecialchars($quiz_id) . "</p>";
+if (!$quiz_id) {
+    echo "ID de quiz non fourni.";
     exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name_quiz = $_POST['name_quiz'];
+    $description = $_POST['description'];
+    $enabled = $_POST['enabled'];
+    $questions = isset($_POST['questions']) ? $_POST['questions'] : [];
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("UPDATE quiz SET name_quiz = ?, description = ?, enabled = ? WHERE id = ?");
+        $stmt->execute([$name_quiz, $description, $enabled, $quiz_id]);
+
+        $stmtQuestion = $pdo->prepare("UPDATE questions SET question = ?, good_response = ?, bad_responses = ?, point = ? WHERE id = ?");
+        foreach ($questions as $question_id => $question_data) {
+            $stmtQuestion->execute([$question_data['question'], $question_data['good_response'], $question_data['bad_responses'], $question_data['point'], $question_id]);
+        }
+
+        $pdo->commit();
+        header('Location: list.php?success=1');
+        exit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo "Failed: " . $e->getMessage();
+    }
 }
 
 // Fetch quiz details from database
@@ -30,49 +55,13 @@ if (!$quiz) {
     exit();
 }
 
-// Fetch questions
+// Fetch questions for the quiz
 $queryQuestions = "SELECT * FROM questions WHERE quiz_id = ?";
 $stmtQuestions = $pdo->prepare($queryQuestions);
 $stmtQuestions->bindParam(1, $quiz_id, PDO::PARAM_INT);
 $stmtQuestions->execute();
 $questions = $stmtQuestions->fetchAll(PDO::FETCH_ASSOC);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name_quiz = $_POST['name_quiz'];
-    $description = $_POST['description'];
-    $creator = $_POST['creator'];
-    $categorie = $_POST['categorie'];
-    $enabled = $_POST['enabled'];
-    $questions = isset($_POST['questions']) ? $_POST['questions'] : [];
-
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("UPDATE quiz SET name_quiz = ?, description = ?, creator = ?, categorie = ?, enabled = ? WHERE id = ?");
-        $stmt->execute([$name_quiz, $description, $creator, $categorie, $enabled, $quiz_id]);
-
-        $stmtQuestion = $pdo->prepare("UPDATE questions SET question = ?, good_response = ?, bad_responses = ? WHERE id = ?");
-
-        foreach ($questions as $question_id => $question_data) {
-            $stmtQuestion->execute([$question_data['question'], $question_data['good_response'], $question_data['bad_responses'], $question_id]);
-        }
-
-        $pdo->commit();
-        header('Location: list.php?success=1');
-        exit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo "Erreur : " . $e->getMessage();
-    }
-}
-
-// Fetch categories from the category table
-$queryCategories = "SELECT * FROM category";
-$stmtCategories = $pdo->prepare($queryCategories);
-$stmtCategories->execute();
-$categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -85,7 +74,7 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <?php require '../_partials/navbar.php'; ?>
     <div class="container mt-5">
-        <h1>Modifier le Quiz : <?= htmlspecialchars($quiz['name_quiz']) ?></h1>
+        <h1>Modifier le Quiz</h1>
         <form action="modified_quiz.php?quiz_id=<?= $quiz_id ?>" method="POST">
             <div class="mb-3">
                 <label for="name_quiz" class="form-label">Nom du Quiz</label>
@@ -96,30 +85,11 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
                 <textarea class="form-control" id="description" name="description" rows="3" required><?= htmlspecialchars($quiz['description']) ?></textarea>
             </div>
             <div class="mb-3">
-                <label for="creator" class="form-label">Auteur</label>
-                <input type="text" class="form-control" id="creator" name="creator" value="<?= htmlspecialchars($quiz['creator']) ?>" required>
-            </div>
-            <div class="mb-3">
-                <label for="categorie" class="form-label">Catégorie</label>
-                <select class="form-control" id="categorie" name="categorie" required>
-                    <?php foreach ($categories as $category): ?>
-                        <option value="<?= htmlspecialchars($category['name']) ?>" <?= isset($quiz['categorie']) && $quiz['categorie'] == $category['name'] ? 'selected' : '' ?>><?= htmlspecialchars($category['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="mb-3">
                 <label for="enabled" class="form-label">Activer</label>
                 <select class="form-control" id="enabled" name="enabled" required>
-                    <option value="1" <?= $quiz['enabled'] ? 'selected' : '' ?>>Oui</option>
-                    <option value="0" <?= !$quiz['enabled'] ? 'selected' : '' ?>>Non</option>
+                    <option value="1" <?= $quiz['enabled'] == 1 ? 'selected' : '' ?>>Oui</option>
+                    <option value="0" <?= $quiz['enabled'] == 0 ? 'selected' : '' ?>>Non</option>
                 </select>
-            </div>
-            <div class="mb-3">
-                <label for="question" class="form-label">Question</label>
-                <input type="text" class="form-control" id="question" placeholder="Entrez une question">
-            </div>
-            <div class="mb-3">
-                <button type="button" class="btn btn-secondary" id="add-question">Ajouter une question</button>
             </div>
             <ol class="list-group list-group-numbered" id="question-list">
                 <?php foreach ($questions as $question): ?>
@@ -136,13 +106,17 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
                             <label for="bad_responses_<?= $question['id'] ?>" class="form-label">Mauvaises réponses (séparées par des virgules)</label>
                             <input type="text" class="form-control" id="bad_responses_<?= $question['id'] ?>" name="questions[<?= $question['id'] ?>][bad_responses]" value="<?= htmlspecialchars($question['bad_responses']) ?>" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="point_<?= $question['id'] ?>" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="point_<?= $question['id'] ?>" name="questions[<?= $question['id'] ?>][point]" value="<?= htmlspecialchars($question['point'] ?? 1) ?>" required>
+                        </div>
                         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Supprimer la question</button>
                     </li>
                 <?php endforeach; ?>
             </ol>
             <div class="mb-3 d-flex justify-content-end mt-3">
                 <div class="d-grid gap-2 d-md-block">
-                    <button type="button" class="btn btn-danger"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="btn btn-secondary" id="add-question">Ajouter une question</button>
                     <button type="submit" class="btn btn-primary">Modifier</button>
                 </div>
             </div>
@@ -151,47 +125,45 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
 
     <script>
         document.getElementById('add-question').addEventListener('click', function() {
-            var questionInput = document.getElementById('question');
-            var questionText = questionInput.value.trim();
+            var questionList = document.getElementById('question-list');
+            var newQuestionItem = document.createElement('li');
+            newQuestionItem.className = 'list-group-item';
 
-            if (questionText !== '') {
-                var questionList = document.getElementById('question-list');
-                var newQuestionItem = document.createElement('li');
-                newQuestionItem.className = 'list-group-item';
+            var questionHeader = document.createElement('div');
+            questionHeader.className = 'mb-3';
+            questionHeader.innerHTML = '<label for="new_question_' + questionList.children.length + '" class="form-label">Question</label>' +
+                                       '<input type="text" class="form-control" id="new_question_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][question]" required>';
 
-                var questionHeader = document.createElement('div');
-                questionHeader.className = 'mb-3';
-                questionHeader.innerHTML = '<label for="new_question_' + questionList.children.length + '" class="form-label">Question</label>' +
-                                           '<input type="text" class="form-control" id="new_question_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][question]" value="' + questionText + '" required>';
+            var goodResponseInput = document.createElement('div');
+            goodResponseInput.className = 'mb-3';
+            goodResponseInput.innerHTML = '<label for="new_good_response_' + questionList.children.length + '" class="form-label">Bonne réponse</label>' +
+                                          '<input type="text" class="form-control" id="new_good_response_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][good_response]" required>';
 
-                var goodResponseInput = document.createElement('div');
-                goodResponseInput.className = 'mb-3';
-                goodResponseInput.innerHTML = '<label for="new_good_response_' + questionList.children.length + '" class="form-label">Bonne réponse</label>' +
-                                              '<input type="text" class="form-control" id="new_good_response_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][good_response]" required>';
+            var badResponsesInput = document.createElement('div');
+            badResponsesInput.className = 'mb-3';
+            badResponsesInput.innerHTML = '<label for="new_bad_responses_' + questionList.children.length + '" class="form-label">Mauvaises réponses (séparées par des virgules)</label>' +
+                                          '<input type="text" class="form-control" id="new_bad_responses_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][bad_responses]" required>';
 
-                var badResponsesInput = document.createElement('div');
-                badResponsesInput.className = 'mb-3';
-                badResponsesInput.innerHTML = '<label for="new_bad_responses_' + questionList.children.length + '" class="form-label">Mauvaises réponses (séparées par des virgules)</label>' +
-                                              '<input type="text" class="form-control" id="new_bad_responses_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][bad_responses]" required>';
+            var pointInput = document.createElement('div');
+            pointInput.className = 'mb-3';
+            pointInput.innerHTML = '<label for="new_point_' + questionList.children.length + '" class="form-label">Points</label>' +
+                                   '<input type="number" class="form-control" id="new_point_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][point]" value="1" required>';
 
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'btn btn-danger btn-sm';
-                removeButton.textContent = 'Supprimer la question';
-                removeButton.addEventListener('click', function() {
-                    questionList.removeChild(newQuestionItem);
-                });
+            var removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'btn btn-danger btn-sm';
+            removeButton.textContent = 'Supprimer la question';
+            removeButton.addEventListener('click', function() {
+                questionList.removeChild(newQuestionItem);
+            });
 
-                newQuestionItem.appendChild(questionHeader);
-                newQuestionItem.appendChild(goodResponseInput);
-                newQuestionItem.appendChild(badResponsesInput);
-                newQuestionItem.appendChild(removeButton);
+            newQuestionItem.appendChild(questionHeader);
+            newQuestionItem.appendChild(goodResponseInput);
+            newQuestionItem.appendChild(badResponsesInput);
+            newQuestionItem.appendChild(pointInput);
+            newQuestionItem.appendChild(removeButton);
 
-                questionList.appendChild(newQuestionItem);
-
-                // Effacer le champ de saisie après l'ajout
-                questionInput.value = '';
-            }
+            questionList.appendChild(newQuestionItem);
         });
     </script>
 

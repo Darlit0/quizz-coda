@@ -25,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$name_quiz, $description, $creator, $categorie, $enabled]);
         $quiz_id = $pdo->lastInsertId();
 
-        $stmtQuestion = $pdo->prepare("INSERT INTO questions (quiz_id, question, good_response, bad_responses) VALUES (?, ?, ?, ?)");
+        $stmtQuestion = $pdo->prepare("INSERT INTO questions (quiz_id, question, good_response, bad_responses, point) VALUES (?, ?, ?, ?, ?)");
         foreach ($questions as $question_data) {
-            $stmtQuestion->execute([$quiz_id, $question_data['question'], $question_data['good_response'], $question_data['bad_responses']]);
+            $stmtQuestion->execute([$quiz_id, $question_data['question'], $question_data['good_response'], $question_data['bad_responses'], $question_data['point'] ?? 1]);
         }
 
         $pdo->commit();
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo "Erreur : " . $e->getMessage();
+        echo "Failed: " . $e->getMessage();
     }
 }
 
@@ -45,7 +45,6 @@ $stmtCategories = $pdo->prepare($queryCategories);
 $stmtCategories->execute();
 $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -59,14 +58,14 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
     <?php require '../_partials/navbar.php'; ?>
     <div class="container mt-5">
         <h1>Ajouter un Quiz</h1>
-        <form action="add_quiz.php" method="POST">
+        <form action="../controller/add_quiz.php" method="POST">
             <div class="mb-3">
                 <label for="name_quiz" class="form-label">Nom du Quiz</label>
                 <input type="text" class="form-control" id="name_quiz" name="name_quiz" required>
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
             </div>
             <div class="mb-3">
                 <label for="creator" class="form-label">Auteur</label>
@@ -76,7 +75,7 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
                 <label for="categorie" class="form-label">Catégorie</label>
                 <select class="form-control" id="categorie" name="categorie" required>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= htmlspecialchars($category['id']) ?>"><?= htmlspecialchars($category['name']) ?></option>
+                        <option value="<?= htmlspecialchars($category['name']) ?>"><?= htmlspecialchars($category['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -95,8 +94,7 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
                 <button type="button" class="btn btn-secondary" id="add-question">Ajouter une question</button>
             </div>
             <ol class="list-group list-group-numbered" id="question-list"></ol>
-            <div class="mb-3 d-flex justify-content-between">
-                <button type="button" class="btn btn-outline-secondary">Retour</button>
+            <div class="mb-3 d-flex justify-content-end mt-3">
                 <div class="d-grid gap-2 d-md-block">
                     <button type="submit" class="btn btn-primary">Ajouter</button>
                 </div>
@@ -104,52 +102,7 @@ $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-    <script>
-        document.getElementById('add-question').addEventListener('click', function() {
-            var questionInput = document.getElementById('question');
-            var questionText = questionInput.value.trim();
-
-            if (questionText !== '') {
-                var questionList = document.getElementById('question-list');
-                var newQuestionItem = document.createElement('li');
-                newQuestionItem.className = 'list-group-item';
-
-                var questionHeader = document.createElement('div');
-                questionHeader.className = 'mb-3';
-                questionHeader.innerHTML = '<label for="new_question_' + questionList.children.length + '" class="form-label">Question</label>' +
-                                           '<input type="text" class="form-control" id="new_question_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][question]" value="' + questionText + '" required>';
-
-                var goodResponseInput = document.createElement('div');
-                goodResponseInput.className = 'mb-3';
-                goodResponseInput.innerHTML = '<label for="new_good_response_' + questionList.children.length + '" class="form-label">Bonne réponse</label>' +
-                                              '<input type="text" class="form-control" id="new_good_response_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][good_response]" required>';
-
-                var badResponsesInput = document.createElement('div');
-                badResponsesInput.className = 'mb-3';
-                badResponsesInput.innerHTML = '<label for="new_bad_responses_' + questionList.children.length + '" class="form-label">Mauvaises réponses (séparées par des virgules)</label>' +
-                                              '<input type="text" class="form-control" id="new_bad_responses_' + questionList.children.length + '" name="questions[new_' + questionList.children.length + '][bad_responses]" required>';
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'btn btn-danger btn-sm';
-                removeButton.textContent = 'Supprimer la question';
-                removeButton.addEventListener('click', function() {
-                    questionList.removeChild(newQuestionItem);
-                });
-
-                newQuestionItem.appendChild(questionHeader);
-                newQuestionItem.appendChild(goodResponseInput);
-                newQuestionItem.appendChild(badResponsesInput);
-                newQuestionItem.appendChild(removeButton);
-
-                questionList.appendChild(newQuestionItem);
-
-                // Effacer le champ de saisie après l'ajout
-                questionInput.value = '';
-            }
-        });
-    </script>
-
+    <script src="../assets/js/services/add_quiz.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -48,18 +48,9 @@ if ($quiz_id) {
             <div class="progress-bar bg-success" id="progressBar" style="width: 0%">0%</div>
         </div>
         <?php if ($quiz_id && !empty($questions)): ?>
-            <form method="POST" action="submit_quiz.php" id="quizForm">
-                <div id="questionOrder">
-                    <?php foreach ($questions as $index => $question): ?>
-                        <div class="question-item" data-index="<?= $index ?>">
-                            <span><?= htmlspecialchars($question['question']) ?></span>
-                            <button type="button" class="btn btn-success move-up">↑</button>
-                            <button type="button" class="btn btn-danger move-down">↓</button>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                <button type="button" class="btn btn-primary" id="startQuiz">Lancer le quiz</button>
-                <div class="accordion accordion-flush d-none" id="accordionExample">
+            <form method="POST" action="submit_quiz.php?quiz_id=<?= $quiz_id ?>">
+                <input type="hidden" name="quiz_id" value="<?= $quiz_id ?>">
+                <div class="accordion accordion-flush" id="accordionExample">
                     <?php foreach ($questions as $index => $question): ?>
                         <div class="accordion-item">
                             <h2 class="accordion-header">
@@ -72,19 +63,22 @@ if ($quiz_id) {
                                     <div>
                                         <?php
                                         $responses = array_merge(
-                                            [$question['good_response']],
-                                            explode(',', $question['bad_responses'])
+                                            [htmlspecialchars($question['good_response'])],
+                                            array_map('htmlspecialchars', explode(',', $question['bad_responses']))
                                         );
                                         shuffle($responses);
                                         ?>
                                         <?php foreach ($responses as $response): ?>
-                                            <input type="radio" name="question_<?= $question['id'] ?>" value="<?= htmlspecialchars(trim($response)) ?>" required> <?= htmlspecialchars(trim($response)) ?><br>
+                                            <input type="radio" name="question_<?= $question['id'] ?>" value="<?= $response ?>" required> <?= $response ?><br>
                                         <?php endforeach; ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Soumettre</button>
                 </div>
             </form>
         <?php else: ?>
@@ -95,35 +89,6 @@ if ($quiz_id) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const questionOrder = document.getElementById('questionOrder');
-            const startQuizButton = document.getElementById('startQuiz');
-            const accordionExample = document.getElementById('accordionExample');
-
-            questionOrder.addEventListener('click', function(event) {
-                if (event.target.classList.contains('move-up')) {
-                    const item = event.target.closest('.question-item');
-                    if (item.previousElementSibling) {
-                        questionOrder.insertBefore(item, item.previousElementSibling);
-                    }
-                } else if (event.target.classList.contains('move-down')) {
-                    const item = event.target.closest('.question-item');
-                    if (item.nextElementSibling) {
-                        questionOrder.insertBefore(item.nextElementSibling, item);
-                    }
-                }
-            });
-
-            startQuizButton.addEventListener('click', function() {
-                const orderedQuestions = Array.from(questionOrder.children).map(item => item.dataset.index);
-                const accordionItems = Array.from(accordionExample.children);
-                orderedQuestions.forEach(index => {
-                    accordionExample.appendChild(accordionItems[index]);
-                });
-                questionOrder.classList.add('d-none');
-                startQuizButton.classList.add('d-none');
-                accordionExample.classList.remove('d-none');
-            });
-
             const accordion = document.getElementById('accordionExample');
             const progressBar = document.getElementById('progressBar');
             const totalQuestions = <?= count($questions) ?>;
@@ -143,7 +108,6 @@ if ($quiz_id) {
                     }
                     currentCollapse.classList.remove('show');
 
-                    // Mettre à jour la barre de progression
                     answeredQuestions++;
                     const progress = (answeredQuestions / totalQuestions) * 100;
                     progressBar.style.width = progress + '%';

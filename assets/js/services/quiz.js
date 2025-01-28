@@ -44,4 +44,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    document.getElementById('quiz_id').addEventListener('change', function() {
+        var quizId = this.value;
+        var questionsDiv = document.getElementById('questions');
+        questionsDiv.innerHTML = '';
+
+        fetch('../controller/quiz.php?quiz_id=' + quizId)
+            .then(response => response.json())
+            .then(data => {
+                data.questions.forEach(question => {
+                    const questionHtml = `
+                        <div class="mb-3">
+                            <label class="form-label">${question.question}</label>
+                            <div>
+                                <input type="radio" name="question_${question.id}" value="${question.good_response}" required> ${question.good_response}<br>
+                                ${question.bad_responses.split(',').map(response => `<input type="radio" name="question_${question.id}" value="${response.trim()}" required> ${response.trim()}<br>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    questionsDiv.insertAdjacentHTML('beforeend', questionHtml);
+                });
+            });
+    });
 });
