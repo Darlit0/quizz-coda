@@ -48,13 +48,13 @@ if ($quiz_id) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="light">
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats du Quiz</title>
-    <link rel="icon" type="image/png" href="img/quiz.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -64,8 +64,7 @@ if ($quiz_id) {
     <div class="container mt-5">
         <?php if ($quiz): ?>
             <h1 class="mb-4">Résultats du Quiz : <?= htmlspecialchars($quiz['name_quiz']) ?></h1>
-            <div class="alert alert-success">Bonnes réponses : <?= $correctAnswers ?></div>
-            <div class="alert alert-danger">Mauvaises réponses : <?= $wrongAnswers ?></div>
+            <div class="alert alert-success">Votre score est de <?= $correctAnswers ?> / <?= count($questions) ?></div>
             <canvas id="resultsChart" width="400" height="400"></canvas>
         <?php else: ?>
             <div class="alert alert-warning">Quiz non trouvé.</div>
@@ -73,34 +72,10 @@ if ($quiz_id) {
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('resultsChart').getContext('2d');
-            const resultsChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Bonnes réponses', 'Mauvaises réponses'],
-                    datasets: [{
-                        label: 'Résultats du Quiz',
-                        data: [<?= $correctAnswers ?>, <?= $wrongAnswers ?>],
-                        backgroundColor: ['#28a745', '#dc3545'],
-                        borderColor: ['#28a745', '#dc3545'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Résultats du Quiz'
-                        }
-                    }
-                }
-            });
-        });
+        const correctAnswers = <?= $correctAnswers ?>;
+        const wrongAnswers = <?= $wrongAnswers ?>;
     </script>
+    <script src="../assets/js/services/submit_quiz.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
 </body>
 </html>

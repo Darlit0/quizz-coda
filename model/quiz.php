@@ -21,8 +21,7 @@ function getUsers(PDO $pdo): array|string
 
 function getAllQuizzes(PDO $pdo): array {
     $query = "SELECT * FROM quiz WHERE enabled = 1";
-    $stmt = $pdo->prepare($query);
-    $stmt->execute();
+    $stmt = $pdo->query($query);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -32,5 +31,11 @@ function getQuestionsByQuizId(PDO $pdo, int $quiz_id): array {
     $stmt->bindParam(':quiz_id', $quiz_id, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getTotalQuizzes(PDO $pdo): int {
+    $query = "SELECT COUNT(*) FROM quiz WHERE enabled = 1";
+    $stmt = $pdo->query($query);
+    return $stmt->fetchColumn();
 }
 ?>

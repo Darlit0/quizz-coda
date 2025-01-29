@@ -1,21 +1,20 @@
 <?php
-session_start();
-require "../includes/database.php";
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once '../includes/database.php';
 
-if (isset($_POST['logout'])) {
-    session_unset();
-    session_destroy();
-    $previousPage = $_SERVER['HTTP_REFERER'] ?? 'index.php';
-    header("Location: $previousPage");
+$quiz_id = $_GET['quiz_id'] ?? null;
+
+if (!$quiz_id) {
+    echo "ID de quiz non fourni.";
     exit();
 }
 
-$quiz_id = $_GET['quiz_id'] ?? null;
-$questions = [];
 $quiz = null;
+$questions = [];
 
 if ($quiz_id) {
-
     $query = "SELECT * FROM quiz WHERE id = :quiz_id";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':quiz_id', $quiz_id, PDO::PARAM_INT);
@@ -30,13 +29,13 @@ if ($quiz_id) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="light">
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quiz Coda</title>
-    <link rel="icon" type="image/png" href="img/quiz.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commencer le Quiz</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
@@ -48,7 +47,7 @@ if ($quiz_id) {
             <div class="progress-bar bg-success" id="progressBar" style="width: 0%">0%</div>
         </div>
         <?php if ($quiz_id && !empty($questions)): ?>
-            <form method="POST" action="submit_quiz.php?quiz_id=<?= $quiz_id ?>">
+            <form id="quiz-form" action="../view/submit_quiz.php" method="POST">
                 <input type="hidden" name="quiz_id" value="<?= $quiz_id ?>">
                 <div class="accordion accordion-flush" id="accordionExample">
                     <?php foreach ($questions as $index => $question): ?>
@@ -60,7 +59,7 @@ if ($quiz_id) {
                             </h2>
                             <div id="collapse<?= $index ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    <div>
+                                    <div class="quiz-form">
                                         <?php
                                         $responses = array_merge(
                                             [htmlspecialchars($question['good_response'])],
@@ -77,44 +76,15 @@ if ($quiz_id) {
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Soumettre</button>
-                </div>
+                <button type="submit" class="btn btn-primary mt-4">Soumettre</button>
             </form>
+            <div id="result" class="mt-4"></div>
         <?php else: ?>
-            <div class="alert alert-warning">Aucune question trouvée pour ce quiz.</div>
+            <div class="alert alert-warning">Aucune question disponible pour ce quiz.</div>
         <?php endif; ?>
     </div>
 
+    <script src="../assets/js/services/start_quiz.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const accordion = document.getElementById('accordionExample');
-            const progressBar = document.getElementById('progressBar');
-            const totalQuestions = <?= count($questions) ?>;
-            let answeredQuestions = 0;
-
-            accordion.addEventListener('change', function(event) {
-                if (event.target.type === 'radio') {
-                    const currentItem = event.target.closest('.accordion-item');
-                    const currentCollapse = currentItem.querySelector('.accordion-collapse');
-                    const nextItem = currentItem.nextElementSibling;
-                    if (nextItem) {
-                        const nextButton = nextItem.querySelector('.accordion-button');
-                        const nextCollapse = nextItem.querySelector('.accordion-collapse');
-                        nextCollapse.classList.add('show');
-                        nextButton.classList.remove('collapsed');
-                        nextButton.setAttribute('aria-expanded', 'true');
-                    }
-                    currentCollapse.classList.remove('show');
-
-                    answeredQuestions++;
-                    const progress = (answeredQuestions / totalQuestions) * 100;
-                    progressBar.style.width = progress + '%';
-                    progressBar.textContent = Math.round(progress) + '%';
-                }
-            });
-        });
-    </script>
 </body>
 </html>

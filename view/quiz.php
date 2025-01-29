@@ -53,7 +53,7 @@ $quizzes = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <script src="includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../includes/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/services/quiz.js"></script>
 </body>
 </html>
