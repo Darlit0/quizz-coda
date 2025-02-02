@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload(); // Recharge la page après la mise à jour réussie
+                    window.location.reload();
                 } else {
                     alert('Failed to update status');
                 }

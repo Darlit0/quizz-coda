@@ -59,7 +59,7 @@ if ($quiz_id) {
         <?php if ($quiz): ?>
             <h1 class="mb-4">Résultats du Quiz : <?= htmlspecialchars($quiz['name_quiz']) ?></h1>
             <div class="alert alert-success">Votre score est de <?= $correctAnswers ?> / <?= count($questions) ?></div>
-            <canvas id="resultsChart" style="width: 200px; height: 200px;"></canvas> <!-- Taille ajustée via CSS -->
+            <canvas id="resultsChart" style="width: 200px; height: 200px;"></canvas>
         <?php else: ?>
             <div class="alert alert-warning">Quiz non trouvé.</div>
         <?php endif; ?>

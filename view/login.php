@@ -42,7 +42,7 @@
 
             const loginResult = await login(loginForm.elements['username'].value, loginForm.elements.pass.value)
 
-            console.log('Login result:', loginResult); // Debug message
+            console.log('Login result:', loginResult);
 
             if (loginResult.hasOwnProperty('authentication')) {
                 document.location.href = '../index.php'

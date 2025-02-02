@@ -3,22 +3,21 @@ export const login = async (username, password) => {
     formData.append('username', username);
     formData.append('password', password);
 
-    console.log('Sending login request with:', { username, password }); // Debug message
-
+    console.log('Sending login request with:', { username, password });
     const response = await fetch('../controller/login.php', {
         method: 'POST',
         body: formData
     });
 
-    const text = await response.text(); // Get the raw response text
-    console.log('Received raw response:', text); // Debug message
+    const text = await response.text();
+    console.log('Received raw response:', text);
 
     try {
-        const result = JSON.parse(text); // Parse the JSON
-        console.log('Parsed response:', result); // Debug message
+        const result = JSON.parse(text);
+        console.log('Parsed response:', result);
         return result;
     } catch (error) {
         console.error('Error parsing JSON:', error);
-        return { errors: ['Invalid server response', text] }; // Include raw response in error
+        return { errors: ['Invalid server response', text] };
     }
 }
