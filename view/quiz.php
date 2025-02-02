@@ -10,16 +10,8 @@ $query = $is_admin ? "SELECT * FROM quiz" : "SELECT * FROM quiz WHERE enabled = 
 $quizzes = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<!DOCTYPE html>
-<html lang="fr" data-bs-theme="light">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quiz Coda</title>
-    <link rel="icon" type="image/png" href="img/quiz.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
+<?php include './_partials/header.php'; ?>
+
 <body>
 
     <?php include './_partials/navbar.php'; ?>

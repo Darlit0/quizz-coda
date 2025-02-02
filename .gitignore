@@ -1,5 +1,5 @@
 img/
-view/.env
+/vendor/
+.env
 composer.lock
 composer.json
-vendor/ 

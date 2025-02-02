@@ -2,7 +2,7 @@
    require("../_partials/errors.php")
 ?>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<?php require '../_partials/header.php'; ?>
 
 <div class="container vh-100 d-flex justify-content-center align-items-center">
     <div class="row justify-content-center w-100">

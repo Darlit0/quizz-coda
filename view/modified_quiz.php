@@ -17,33 +17,6 @@ if (!$quiz_id) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name_quiz = $_POST['name_quiz'];
-    $description = $_POST['description'];
-    $enabled = $_POST['enabled'];
-    $questions = isset($_POST['questions']) ? $_POST['questions'] : [];
-
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("UPDATE quiz SET name_quiz = ?, description = ?, enabled = ? WHERE id = ?");
-        $stmt->execute([$name_quiz, $description, $enabled, $quiz_id]);
-
-        $stmtQuestion = $pdo->prepare("UPDATE questions SET question = ?, good_response = ?, bad_responses = ?, point = ? WHERE id = ?");
-        foreach ($questions as $question_id => $question_data) {
-            $stmtQuestion->execute([$question_data['question'], $question_data['good_response'], $question_data['bad_responses'], $question_data['point'], $question_id]);
-        }
-
-        $pdo->commit();
-        header('Location: list.php?success=1');
-        exit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo "Failed: " . $e->getMessage();
-    }
-}
-
-// Fetch quiz details from database
 $query = "SELECT * FROM quiz WHERE id = ?";
 $stmt = $pdo->prepare($query);
 $stmt->bindParam(1, $quiz_id, PDO::PARAM_INT);
@@ -55,22 +28,20 @@ if (!$quiz) {
     exit();
 }
 
-// Fetch questions for the quiz
 $queryQuestions = "SELECT * FROM questions WHERE quiz_id = ?";
 $stmtQuestions = $pdo->prepare($queryQuestions);
 $stmtQuestions->bindParam(1, $quiz_id, PDO::PARAM_INT);
 $stmtQuestions->execute();
 $questions = $stmtQuestions->fetchAll(PDO::FETCH_ASSOC);
+
+$queryCategories = "SELECT * FROM category";
+$stmtCategories = $pdo->prepare($queryCategories);
+$stmtCategories->execute();
+$categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifier un Quiz</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
+
+<?php require '../_partials/header.php'; ?>
+
 <body>
     <?php include '../_partials/navbar.php'; ?>
     <div class="container mt-5">
@@ -91,9 +62,17 @@ $questions = $stmtQuestions->fetchAll(PDO::FETCH_ASSOC);
                     <option value="0" <?= $quiz['enabled'] == 0 ? 'selected' : '' ?>>Non</option>
                 </select>
             </div>
-            <div id="questions">
-                <?php foreach ($questions as $question): ?>
-                    <div class="mb-3">
+            <div class="mb-3">
+                <label class="form-label">Catégorie</label>
+                <select class="form-control" name="questions[<?= $question['id'] ?>][category_id]" required>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= $category['id'] ?>" <?= isset($question['category_id']) && $question['category_id'] == $category['id'] ? 'selected' : '' ?>><?= htmlspecialchars($category['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <ol class="list-group list-group-numbered" id="questions">
+                <?php foreach ($questions as $index => $question): ?>
+                    <li class="list-group-item mb-3">
                         <label class="form-label">Question</label>
                         <input type="text" class="form-control" name="questions[<?= $question['id'] ?>][question]" value="<?= htmlspecialchars($question['question']) ?>" required>
                         <label class="form-label">Bonne réponse</label>
@@ -102,13 +81,19 @@ $questions = $stmtQuestions->fetchAll(PDO::FETCH_ASSOC);
                         <input type="text" class="form-control" name="questions[<?= $question['id'] ?>][bad_responses]" value="<?= htmlspecialchars($question['bad_responses']) ?>" required>
                         <label class="form-label">Points</label>
                         <input type="number" class="form-control" name="questions[<?= $question['id'] ?>][point]" value="<?= htmlspecialchars($question['point']) ?>" required>
-                    </div>
+                    </li>
                 <?php endforeach; ?>
-            </div>
+            </ol>
+            <button type="button" id="add-question" class="btn btn-secondary">Ajouter une question</button>
             <button type="submit" class="btn btn-primary">Modifier</button>
         </form>
     </div>
 
+    <script>
+        const categoriesOptionsHtml = `<?php foreach ($categories as $category): ?>
+            <option value="<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
+        <?php endforeach; ?>`;
+    </script>
     <script src="../assets/js/services/modified_quiz.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
 </body>

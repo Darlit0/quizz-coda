@@ -47,16 +47,10 @@ if ($quiz_id) {
     exit;
 }
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats du Quiz</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+<?php require '../_partials/header.php'; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <body>
 
     <?php include '../_partials/navbar.php'; ?>
@@ -65,7 +59,7 @@ if ($quiz_id) {
         <?php if ($quiz): ?>
             <h1 class="mb-4">Résultats du Quiz : <?= htmlspecialchars($quiz['name_quiz']) ?></h1>
             <div class="alert alert-success">Votre score est de <?= $correctAnswers ?> / <?= count($questions) ?></div>
-            <canvas id="resultsChart" width="400" height="400"></canvas>
+            <canvas id="resultsChart" style="width: 200px; height: 200px;"></canvas> <!-- Taille ajustée via CSS -->
         <?php else: ?>
             <div class="alert alert-warning">Quiz non trouvé.</div>
         <?php endif; ?>
@@ -74,6 +68,34 @@ if ($quiz_id) {
     <script>
         const correctAnswers = <?= $correctAnswers ?>;
         const wrongAnswers = <?= $wrongAnswers ?>;
+
+        const data = {
+            labels: ['Correct', 'Incorrect'],
+            datasets: [{
+                data: [correctAnswers, wrongAnswers],
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        };
+
+        const config = {
+            type: 'doughnut',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Résultats du Quiz'
+                    }
+                }
+            }
+        };
+
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        const resultsChart = new Chart(ctx, config);
     </script>
     <script src="../assets/js/services/submit_quiz.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
