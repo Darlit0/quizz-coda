@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             questionList.appendChild(newQuestionItem);
 
-            // Effacer le champ de saisie après l'ajout
             questionInput.value = '';
         }
     });

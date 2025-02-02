@@ -1,5 +1,5 @@
 <?php
-// filepath: /c:/xampp/htdocs/quizz_coda/controller/modified_quiz.php
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

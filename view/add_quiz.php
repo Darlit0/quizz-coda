@@ -39,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch categories from the category table
 $queryCategories = "SELECT * FROM category";
 $stmtCategories = $pdo->prepare($queryCategories);
 $stmtCategories->execute();

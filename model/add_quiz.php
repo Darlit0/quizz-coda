@@ -1,5 +1,4 @@
 <?php
-// filepath: /c:/xampp/htdocs/quizz_coda/model/add_quiz.php
 
 function getCategories(PDO $pdo): array {
     $query = "SELECT * FROM category";

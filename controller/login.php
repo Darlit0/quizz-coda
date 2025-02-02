@@ -2,7 +2,7 @@
 require("../includes/database.php");
 require("../model/login.php");
 
-header("Content-Type: application/json"); // Ensure the response is JSON
+header("Content-Type: application/json");
 
 if (!empty($_SERVER['CONTENT_TYPE']) &&
     (
@@ -27,8 +27,8 @@ if (!empty($_SERVER['CONTENT_TYPE']) &&
             session_start();
             $_SESSION["auth"] = true;
             $_SESSION["username"] = $connexion['username'];
-            $_SESSION["user_role"] = 'admin'; // Définir le rôle de l'utilisateur
-            $previousPage = $_SERVER['HTTP_REFERER'] ?? '../index.php'; // Utiliser HTTP_REFERER pour obtenir la page précédente
+            $_SESSION["user_role"] = 'admin';
+            $previousPage = $_SERVER['HTTP_REFERER'] ?? '../index.php';
             echo json_encode(['authentication' => true, 'redirect' => $previousPage]);
             exit();
         }

@@ -1,5 +1,4 @@
 <?php
-// filepath: /c:/xampp/htdocs/quizz_coda/model/start_quiz.php
 
 function getQuizById(PDO $pdo, int $quiz_id): array {
     $query = "SELECT * FROM quiz WHERE id = :quiz_id";
